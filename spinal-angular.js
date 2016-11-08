@@ -19,16 +19,17 @@ angular.module('spinal-angular', [])
 
 })
 
-.factory("spinalCore", ['FileSystem', '$q', function (FileSystem, $q) {
+.factory("spinalCore", ['FileSystem', '$q', '$rootScope', function (FileSystem, $q, $rootScope) {
 
   spinalFactory = angular.copy(spinalCore);
 
-  spinalFactory.init = function (path) {
+  spinalFactory.init = function (params) {
     var deferred = $q.defer();
     
-    spinalCore.load(FileSystem, path,
+    spinalCore.load(FileSystem, params.path,
       function (data) {
         // if success, resolve promise
+        params.process = new AngularProcess(data, $rootScope);
         deferred.resolve(data);
       },
       function () {
