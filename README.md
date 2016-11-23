@@ -30,7 +30,7 @@ The first step is to connect with the SpinalHub.
 
 A good practice would be to access the module through an Angular service. Below there is an example of a basic service. It contains an internal `init()` function which loads a model from SpinalHub and creates a Process that is stored in `params.process`. It has also a public function `subscribe(attribute, handler)` which executes the `handler` whenever the `attribute` changes.
 ```
-.service('TutoService', ['spinalCore', function (spinalCor) {
+.service('TutoService', ['spinalCore', function (spinalCore) {
 
   var params = {
     process: null,
