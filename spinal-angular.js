@@ -25,17 +25,24 @@ angular.module('spinal-angular', [])
 
   spinalFactory.init = function (params) {
     var deferred = $q.defer();
+
+    if (params.process == null) {
     
-    spinalCore.load(FileSystem, params.path,
-      function (data) {
-        // if success, resolve promise
-        params.process = new AngularProcess(data, $rootScope);
-        deferred.resolve(data);
-      },
-      function () {
-        // if an error happens, reject promise
-        deferred.reject();
-      });
+      spinalCore.load(FileSystem, params.path,
+        function (data) {
+          // if success, resolve promise
+          params.process = new AngularProcess(data, $rootScope);
+          deferred.resolve(data);
+        },
+        function () {
+          // if an error happens, reject promise
+          deferred.reject();
+        });
+
+      } else {
+        // if gym member list already inititated, resolve promise
+        deferred.resolve();
+      }
       
       return deferred.promise;
   }
@@ -51,6 +58,10 @@ function AngularProcess(model, rootScope) {
   this.model = model;
   var _rootScope = rootScope;
 
+  this.updateAngularScope = function () {
+    _rootScope.$digest();
+  }
+
   this.subscribe = function (attribute, handler) {
     // TODO: check that attribute exists in the model
     // create array if not already
@@ -64,6 +75,8 @@ function AngularProcess(model, rootScope) {
 
   this.unsubscribe = function (attribute, index) {
     subscribed_attributes[attribute].splice(index, 1, null);
+    if (subscribed_attributes[attribute].length == 0)
+      subscribed_attributes.splice(subscribed_attributes.indexOf(attribute), 1, null);
   }
 
   this.onchange = function () {
@@ -74,15 +87,17 @@ function AngularProcess(model, rootScope) {
         if (this.model[attribute].has_been_modified()) {
           // get all handlers for the attribute and execute them
           var handlers = subscribed_attributes[attribute];
-          for (var i in handlers)
-            handlers[i](this.model[attribute]);
+          for (var i in handlers) {
+            if (typeof handlers[i] == "function")
+              handlers[i](this.model[attribute]);
+          }
           doDigest = true;
         }
       }
     }
 
     if (doDigest)
-      _rootScope.$digest();
+      this.updateAngularScope();
   }
 
 }
