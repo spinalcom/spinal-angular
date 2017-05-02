@@ -1,0 +1,1 @@
+../browser/AngularApp/myModel.js
